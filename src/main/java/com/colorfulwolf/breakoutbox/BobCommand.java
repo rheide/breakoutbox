@@ -16,6 +16,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.mojang.brigadier.Command;
+import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -26,6 +27,7 @@ import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.block.CommandBlock;
 
 public class BobCommand implements Command<CommandSourceStack> {
 
@@ -58,16 +60,20 @@ public class BobCommand implements Command<CommandSourceStack> {
 		// TODO check if player entity, if op
 		// TODO check if command block
 		
+		//ParseResults<CommandSourceStack> parseResults = this.server.getCommands().getDispatcher().parse("data modify block 361 71 -92 SuccessCount set value 4", command.getSource());
 		String cmd = command.getArgument("cmd", String.class);
 		if (this.commandOptions.containsKey(cmd)) {
 			BobCommandOptions commandOptions = this.commandOptions.get(cmd);
 			// TODO rate limiting here
-			this.executor.execute(new BobExternalCommandTask(this.server, this.options, commandOptions, command));
+			//this.executor.execute(new BobExternalCommandTask(this.server, this.options, commandOptions, command, parseResults));
+			this.server.execute(new BobExternalCommandTask(this.server, this.options, commandOptions, command, null));
+			
 		} else if (entity != null) {
 			entity.sendMessage(new TextComponent("Command not found: " + cmd), Constants.ID);
 		}		
 		// TODO does command block state change need to be undone here?
 		LOGGER.info("Parsing finished");
+		
 		return 0;
 	}
 	

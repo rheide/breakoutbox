@@ -16,13 +16,22 @@ import java.util.regex.Pattern;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.ParsedCommandNode;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.BaseCommandBlock;
+import net.minecraft.world.level.block.CommandBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.phys.Vec3;
 
 public class BobExternalCommandTask implements Runnable {
 
@@ -37,12 +46,15 @@ public class BobExternalCommandTask implements Runnable {
 
 	private CommandContext<CommandSourceStack> command;
 
+	private ParseResults<CommandSourceStack> parseResults;
+
 	public BobExternalCommandTask(MinecraftServer server, BobOptions options, BobCommandOptions cmd,
-			CommandContext<CommandSourceStack> command) {
+			CommandContext<CommandSourceStack> command, ParseResults<CommandSourceStack> parseResults) {
 		this.server = server;
 		this.options = options;
 		this.cmd = cmd;
 		this.command = command;
+		this.parseResults = parseResults;
 	}
 
 	@Override
@@ -121,7 +133,25 @@ public class BobExternalCommandTask implements Runnable {
 				// TODO scoreboard variables
 				// this.server.getCommands().getDispatcher().execute("say command finished",
 				// command.getSource());
-				this.server.getCommands().getDispatcher().execute("data modify block 361 71 -92 SuccessCount set value " + exitVal, this.command.getSource());
+				this.command.getSource().getPosition();
+				
+				
+				//this.command.getSource().getLevel().getBlo
+				
+				//blockState.setValue(IntegerProperty.create("SuccessCount", 0, 100), exitVal);
+				
+				/*Vec3 pos = this.command.getSource().getServer().getCommands().getDispatcher().
+				BlockState blockState = this.command.getSource().getLevel().getBlockState(new BlockPos(pos));
+				LOGGER.info("State: " + blockState);
+				LOGGER.info("Block: " + blockState.getBlock());*/
+				
+				// Output @modified block data message to player
+				//this.server.getCommands().getDispatcher().execute("data modify block 361 71 -92 SuccessCount set value " + exitVal, this.command.getSource());
+
+				this.server.getCommands().performCommand(this.command.getSource(), "data modify block 361 71 -92 SuccessCount set value " + exitVal);
+				
+				//BaseCommandBlock block = blockState.getBlock();
+				//block.setSuccessCount(exitVal);
 				// ((BlockCommandSender)
 				// sender).getBlock().getState().setMetadata("SuccessCount", new
 				// MetadataValueOutput(state));
