@@ -28,6 +28,7 @@ import org.apache.logging.log4j.Logger;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.context.ParsedCommandNode;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -52,10 +53,10 @@ import java.util.stream.Collectors;
 @Mod("breakoutbox")
 public class BreakoutBox {
 	// Directly reference a log4j logger.
-	public static final UUID ID = UUID.fromString("4b2fa329-a748-4fa5-8e39-c8dac1190003");
-	private static final Logger LOGGER = LogManager.getLogger();
+
 	private Map<String, BobCommandOptions> commands = new TreeMap<String, BobCommandOptions>();
 	private BobOptions options = new BobOptions();
+	private static final Logger LOGGER = LogManager.getLogger();
 
 	private final class ListCommand implements Command<CommandSourceStack> {
 		@Override
@@ -73,7 +74,7 @@ public class BreakoutBox {
 					// player.sendMessage(new TextComponent(" - " + key), uuid);
 					cmds.append("  " + key + "\n");
 				}
-				player.sendMessage(new TextComponent(cmds.toString()), BreakoutBox.ID);
+				player.sendMessage(new TextComponent(cmds.toString()), Constants.ID);
 				return 1;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -89,7 +90,7 @@ public class BreakoutBox {
 				ServerPlayer player = command.getSource().getPlayerOrException();
 				BreakoutBox.this.loadConfig(BreakoutBox.this.getConfigFile());
 				player.sendMessage(new TextComponent("RELOADED " + BreakoutBox.this.commands.size() + " commands"),
-						BreakoutBox.ID);
+						Constants.ID);
 				return 1;
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -216,7 +217,7 @@ public class BreakoutBox {
 		CommandDispatcher<CommandSourceStack> disp = server.getCommands().getDispatcher();
 		// event.getServer().getCommands().getDispatcher().register(Commands.literal("bob").executes(new
 		// BobCommand(event.getServer())));
-		BobCommand cmd = new BobCommand(event.getServer(), this.options, this.commands);
+		
 
 		// Optional messageargument at the end
 		// bob list
@@ -230,9 +231,12 @@ public class BreakoutBox {
 		 * Examples: - dynamic maps - easy clocks - IoT - animal pressure plate trigger
 		 * light change rube goldberg machine: real life event trigger minecraft change
 		 * triggers real life event
+		 * echo with variables
 		 */
+		BobCommand cmd = new BobCommand(event.getServer(), this.options, this.commands);
 		disp.register(Commands.literal("bob").then(Commands.literal("list").executes(new ListCommand())));
 		disp.register(Commands.literal("bob").then(Commands.literal("reload").executes(new ReloadCommand())));
+		disp.register(Commands.literal("bob").then(Commands.literal("cmd").then(Commands.argument("cmd", StringArgumentType.word()).executes(cmd))));
 		// disp.register(
 		// Commands.literal("bob").then(Commands.argument("targets",
 		// EntityArgument.entities()).executes(cmd)));
