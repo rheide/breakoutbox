@@ -70,18 +70,19 @@ public class BobExternalCommandTask implements Runnable {
 				LOGGER.info("TIMED OUT. KILLING");
 				process.destroy();
 			} else {
-				StringBuilder out = new StringBuilder();
 				BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 				String line = null;
 				while ((line = reader.readLine()) != null) {
-					out.append(line);
-					out.append("\n");
+					// TODO keep track of time when executing returned commands and kill process if too slow
+					LOGGER.info(line);
+					if (this.cmd.parseOutput) {
+						this.server.getCommands().performCommand(this.command.getSource(), line);						
+					}
 				}
-				LOGGER.info(out);
 
 				int exitVal = Math.max(Math.min(process.exitValue(), 15), 0);
 				LOGGER.info("Exit val: " + exitVal);
-				// TODO keep track of time when executing returned commands
+
 				// TODO scoreboard variables
 
 				if (this.command.getSource().getEntity() == null) {
