@@ -83,11 +83,10 @@ public class BobExternalCommandTask implements Runnable {
 				int exitVal = Math.max(Math.min(process.exitValue(), 15), 0);
 				LOGGER.info("Exit val: " + exitVal);
 
-				// TODO scoreboard variables
-
 				if (this.command.getSource().getEntity() == null) {
 					// If source was command block, update state
 					BlockPos blockPos = new BlockPos(this.command.getSource().getPosition());
+					this.cmd.setLastResult(blockPos, exitVal);
 					String cbCommand = "data modify block " + blockPos.getX() + " " + blockPos.getY() + " "
 							+ blockPos.getZ() + " SuccessCount set value " + exitVal;
 					LOGGER.info(cbCommand);

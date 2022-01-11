@@ -10,9 +10,11 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 
 public class BobCommandParser implements Command<CommandSourceStack> {
 
@@ -52,12 +54,25 @@ public class BobCommandParser implements Command<CommandSourceStack> {
 			// A player is running this
 			canRun = commandOptions.runAsRegularPlayer || command.getSource().hasPermission(Constants.PERM_OP);
 		}
-		
-		LOGGER.info("Command source: " + command.getSource() + " PERM: " + command.getSource().hasPermission(Constants.PERM_OP));
 
 		if (canRun) {
-			// TODO rate limiting here
-			this.server.execute(new BobExternalCommandTask(commandOptions, command));
+			BlockPos pos = new BlockPos(command.getSource().getPosition());
+			if (commandOptions.callAllowed(pos.getX(), pos.getY(), pos.getZ())) {
+				this.server.execute(new BobExternalCommandTask(commandOptions, command));				
+			} else {
+				LOGGER.info("Rate-limited command: " + cmd);
+				if (command.getSource().getEntity() == null) {
+					// If source was command block, remember previous state
+					Integer lastResult = commandOptions.lastResult(pos);
+					if (lastResult != null) {
+						String cbCommand = "data modify block " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + 
+								" SuccessCount set value " + lastResult;
+						LOGGER.info(cbCommand);
+						this.server.getCommands().performCommand(command.getSource(), cbCommand);
+					}
+				}
+			}
+			
 		} else if (entity != null) {
 			entity.sendMessage(new TextComponent("User not allowed to run command: " + cmd), Constants.ID);
 		}

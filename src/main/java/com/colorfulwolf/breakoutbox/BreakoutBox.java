@@ -41,13 +41,6 @@ public class BreakoutBox {
 	private final class ListCommand implements Command<CommandSourceStack> {
 		@Override
 		public int run(CommandContext<CommandSourceStack> command) throws CommandSyntaxException {
-			int permLevel = 0;
-			for (int i = 0; i < 10; i++) {
-				if (command.getSource().hasPermission(i)) {
-					permLevel = i;
-				}
-			}
-			LOGGER.info("Perm: " + permLevel);
 			try {
 				ServerPlayer player = command.getSource().getPlayerOrException();
 				String[] ops = command.getSource().getServer().getPlayerList().getOpNames();
@@ -74,7 +67,7 @@ public class BreakoutBox {
 			try {
 				ServerPlayer player = command.getSource().getPlayerOrException();
 				BreakoutBox.this.loadConfig(BreakoutBox.this.getConfigFile());
-				player.sendMessage(new TextComponent("RELOADED " + BreakoutBox.this.commands.size() + " commands"),
+				player.sendMessage(new TextComponent("Reloaded " + BreakoutBox.this.commands.size() + " commands"),
 						Constants.ID);
 				return 1;
 			} catch (Exception e) {
@@ -158,6 +151,5 @@ public class BreakoutBox {
 						.then(Commands.argument("cmd", StringArgumentType.word()).then(Commands
 								.argument("targets", EntityArgument.entities()).executes(cmd)
 								.then(Commands.argument("params", StringArgumentType.greedyString()).executes(cmd))))));
-		// TODO scoreboards
 	}
 }
