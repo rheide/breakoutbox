@@ -27,8 +27,8 @@ public class BobCommand {
 	public String path;
 	public boolean parseOutput = false;
 
+	public boolean runAsRegularPlayer = false;
 	public boolean runAsCommandBlock = true;
-	public boolean runAsRegularPlayer = true;
 	public boolean runAsOpPlayer = true;
 
 	public long commandTimeoutMilliseconds = 5000;

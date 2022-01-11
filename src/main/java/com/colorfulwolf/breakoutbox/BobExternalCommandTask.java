@@ -3,6 +3,7 @@ package com.colorfulwolf.breakoutbox;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,9 +19,12 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.ObjectiveArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.Score;
 
 public class BobExternalCommandTask implements Runnable {
 
@@ -38,20 +42,29 @@ public class BobExternalCommandTask implements Runnable {
 		this.command = command;
 	}
 
-	private String entityToString(Entity e) {
-		LOGGER.info(e + " - " + e.getClass());
-		return e.getName().getContents() + "," + e.getBlockX() + "," + e.getBlockY() + "," + e.getBlockZ();
+	private String entityToString(Entity e, Objective objective) {
+		String entityScore = "";
+		if (objective != null) {
+			Collection<Score> playerScores = objective.getScoreboard().getPlayerScores(objective);
+			for (Score score : playerScores) {
+				if (score.getOwner().equals(e.getScoreboardName())) {
+					entityScore = "," + score.getScore();
+					break;
+				}
+			}
+		}
+		return e.getName().getContents() + "," + e.getBlockX() + "," + e.getBlockY() + "," + e.getBlockZ() + entityScore;
 	}
 
 	@Override
 	public void run() {
-		LOGGER.info("Executing " + this.cmd.path);
+		LOGGER.debug("Executing " + this.cmd.path);
 
 		Process process = null;
 		try {
 			Map<String, String> vars = getVars();
 
-			// This is stupid... why is escaping a string so hard in java???
+			// Why is escaping a string so hard in java???
 			List<String> cmdArgs = new ArrayList<String>();
 			Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(this.cmd.path);
 			while (m.find()) {
@@ -62,45 +75,38 @@ public class BobExternalCommandTask implements Runnable {
 				cmdArgs.add(cmdArg);
 			}
 
-			LOGGER.info(String.join(" ", cmdArgs));
 			ProcessBuilder builder = new ProcessBuilder(cmdArgs);
 
 			process = builder.start();
 			if (!process.waitFor(this.cmd.commandTimeoutMilliseconds, TimeUnit.MILLISECONDS)) {
-				LOGGER.info("TIMED OUT. KILLING");
 				process.destroy();
 			} else {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 				String line = null;
 				while ((line = reader.readLine()) != null) {
-					// TODO keep track of time when executing returned commands and kill process if too slow
-					LOGGER.info(line);
 					if (this.cmd.parseOutput) {
 						this.server.getCommands().performCommand(this.command.getSource(), line);						
 					}
 				}
 
 				int exitVal = Math.max(Math.min(process.exitValue(), 15), 0);
-				LOGGER.info("Exit val: " + exitVal);
 
 				if (this.command.getSource().getEntity() == null) {
 					// If source was command block, update state
-					BlockPos blockPos = new BlockPos(this.command.getSource().getPosition());
-					this.cmd.setLastResult(blockPos, exitVal);
-					String cbCommand = "data modify block " + blockPos.getX() + " " + blockPos.getY() + " "
-							+ blockPos.getZ() + " SuccessCount set value " + exitVal;
-					LOGGER.info(cbCommand);
+					BlockPos pos = new BlockPos(this.command.getSource().getPosition());
+					this.cmd.setLastResult(pos, exitVal);
+					String cbCommand = String.format(Constants.SETCMD, pos.getX(), pos.getY(), pos.getZ(), exitVal);
+					LOGGER.debug(cbCommand);
 					this.server.getCommands().performCommand(this.command.getSource(), cbCommand);
 				}
 			}
 		} catch (InterruptedException e) {
-			LOGGER.info("INTERRUPTED. KILLING");
+			LOGGER.debug("INTERRUPTED. KILLING");
 			if (process != null) {
 				process.destroy();
 			}
 		} catch (Exception e) {
-			LOGGER.info("EXC: " + e);
-			e.printStackTrace();
+			LOGGER.debug("EXC: " + e);
 			if (process != null) {
 				process.destroy();
 			}
@@ -108,30 +114,36 @@ public class BobExternalCommandTask implements Runnable {
 	}
 
 	private Map<String, String> getVars() {
-		// Basic variable substitution here
+		// Very basic variable substitution here
 		Map<String, String> vars = new HashMap<String, String>();
 
 		try {
 			String args = command.getArgument("params", String.class);
 			vars.put("$args", args);
 		} catch (IllegalArgumentException e) {
-			LOGGER.info("Illegal arg: " + e);
 			vars.put("$args", "");
 		}
 
+		vars.put("$objective", "");
+		Objective objective = null;
+		try {
+			objective = ObjectiveArgument.getObjective(this.command, "objective");
+			vars.put("$objective", objective.getName());
+		}
+		catch (CommandSyntaxException e) { e.printStackTrace(); }
+		catch (IllegalArgumentException e) {}
+		
 		Entity sourceEntity = this.command.getSource().getEntity();
-		vars.put("$src", sourceEntity == null ? "" : this.entityToString(sourceEntity));
+		vars.put("$src", sourceEntity == null ? "" : this.entityToString(sourceEntity, objective));
 
 		List<String> targets = new ArrayList<String>();
 		try {
 			for (Entity e : EntityArgument.getEntities(this.command, "targets")) {
-				targets.add(this.entityToString(e));
+				targets.add(this.entityToString(e, objective));
 			}
 		} catch (CommandSyntaxException e) {
 			LOGGER.info("Syntax error: " + e);
-		} catch (IllegalArgumentException e) {
-			LOGGER.info("Illegal arg: " + e);
-		}
+		} catch (IllegalArgumentException e) {}
 		vars.put("$targets", String.join(";", targets));
 
 		return vars;

@@ -21,6 +21,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.ObjectiveArgument;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -83,7 +84,7 @@ public class BreakoutBox {
 	}
 
 	private File getConfigFile() {
-		return new File("./breakoutbox.yaml");
+		return new File("./breakoutbox.cfg");
 	}
 
 	private void setup(final FMLCommonSetupEvent event) {
@@ -130,11 +131,6 @@ public class BreakoutBox {
 		final MinecraftServer server = event.getServer();
 		CommandDispatcher<CommandSourceStack> disp = server.getCommands().getDispatcher();
 
-		/**
-		 * Examples: - dynamic maps - easy clocks - IoT - animal pressure plate trigger
-		 * light change rube goldberg machine: real life event trigger minecraft change
-		 * triggers real life event echo with variables
-		 */
 		BobCommandParser cmd = new BobCommandParser(server, this.commands);
 		LiteralArgumentBuilder<CommandSourceStack> bob = Commands.literal("bob");
 		disp.register(bob.then(Commands.literal("list").executes(new ListCommand())));
@@ -151,5 +147,12 @@ public class BreakoutBox {
 						.then(Commands.argument("cmd", StringArgumentType.word()).then(Commands
 								.argument("targets", EntityArgument.entities()).executes(cmd)
 								.then(Commands.argument("params", StringArgumentType.greedyString()).executes(cmd))))));
+	
+		disp.register(
+				bob.then(Commands.literal("runscoreboard")
+						.then(Commands.argument("cmd", StringArgumentType.word()).then(
+								Commands.argument("objective", ObjectiveArgument.objective()).then(
+										Commands.argument("targets", EntityArgument.entities()).executes(cmd)
+											.then(Commands.argument("params", StringArgumentType.greedyString()).executes(cmd)))))));
 	}
 }

@@ -30,13 +30,10 @@ public class BobCommandParser implements Command<CommandSourceStack> {
 
 	@Override
 	public int run(CommandContext<CommandSourceStack> command) throws CommandSyntaxException {
-		LOGGER.info("Queueing new command");
-		
 		Entity entity = command.getSource().getEntity();
-		LOGGER.info("Entity: " + command.getSource() + " - " + entity);
+		LOGGER.debug("Queueing new command - source: " + command.getSource() + " - entity: " + entity);
 
 		String cmd = command.getArgument("cmd", String.class);
-		
 		if (!this.commandOptions.containsKey(cmd)) {
 			if (entity != null) {
 				entity.sendMessage(new TextComponent("Command not found: " + cmd), Constants.ID);
@@ -45,7 +42,7 @@ public class BobCommandParser implements Command<CommandSourceStack> {
 		}
 
 		BobCommand commandOptions = this.commandOptions.get(cmd);
-		
+
 		boolean canRun = false;
 		if (entity == null) {
 			// A command block is running this
@@ -58,21 +55,20 @@ public class BobCommandParser implements Command<CommandSourceStack> {
 		if (canRun) {
 			BlockPos pos = new BlockPos(command.getSource().getPosition());
 			if (commandOptions.callAllowed(pos.getX(), pos.getY(), pos.getZ())) {
-				this.server.execute(new BobExternalCommandTask(commandOptions, command));				
+				this.server.execute(new BobExternalCommandTask(commandOptions, command));
 			} else {
-				LOGGER.info("Rate-limited command: " + cmd);
+				// Command is rate-limited
 				if (command.getSource().getEntity() == null) {
 					// If source was command block, remember previous state
 					Integer lastResult = commandOptions.lastResult(pos);
 					if (lastResult != null) {
-						String cbCommand = "data modify block " + pos.getX() + " " + pos.getY() + " " + pos.getZ() + 
-								" SuccessCount set value " + lastResult;
-						LOGGER.info(cbCommand);
+						String cbCommand = String.format(Constants.SETCMD, pos.getX(), pos.getY(), pos.getZ(),
+								lastResult);
 						this.server.getCommands().performCommand(command.getSource(), cbCommand);
 					}
 				}
 			}
-			
+
 		} else if (entity != null) {
 			entity.sendMessage(new TextComponent("User not allowed to run command: " + cmd), Constants.ID);
 		}
