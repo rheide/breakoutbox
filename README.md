@@ -1,6 +1,6 @@
 # Introduction
 
-Breakoutbox (bob) is a Minecraft mod that lets you control external scripts through console commands.
+Breakoutbox (bob for short) is a Minecraft mod for Minecraft Forge that lets you call external scripts through console commands and command blocks.
 
 Key features:
 
@@ -12,6 +12,8 @@ Key features:
 
 Disclaimer: this mod is intended for people who know what they're doing. Be very very sure about what you're doing if you're enabling this mod on a public server,
 because it could easily take your server down if your commands are heavyweight and your permissions too permissive.
+
+Disclaimer 2: this is a side project and I don't intend to spend a lot of time maintaining this project. It's provided here is a foundation for other people to fork.
 
 Before getting started it is strongly recommended that you run "/gamerule commandBlockOutput false" to avoid having
 insane amounts of logging.
@@ -25,7 +27,7 @@ Lists the names of all registered commands.
 
 ## /bob reload
 
-Reloads the breakoutbox.cfg configuration file from disk.
+Reloads the breakoutbox.cfg configuration file from disk. An example file is provided in the examples folder.
 
 
 ## /bob run and variants 
@@ -51,6 +53,7 @@ commandTimeoutMilliseconds=5000
 parseOutput=true
 globalRateLimitMilliseconds=100
 blockRateLimitMilliseconds=1000
+verbose=true
 [anothercommand]
 path=C:\anothercommand.exe
 ...
@@ -84,6 +87,11 @@ custom script to take advantage of this.
 ## commandTimeoutMilliseconds
 
 The maximum amount of time this external command is allowed to run before it is forcefully killed.
+
+## verbose
+
+If set to true the server logs will contain more info about the commands ran and echo the stdout of the called command.
+This is provided for debugging purposes and may be repetitive for frequently called commands, so this is off by default.
 
 
 # Variables
@@ -130,8 +138,13 @@ If the command is rate-limited the command block will keep its previous success 
 
 
 # Examples
-- dynamic maps youtube video
-- easy clocks integrated python script
-- IoT light switch
-- animal pressure plate trigger real life light
-- simple echo script
+
+See the examples folder for more examples.
+
+Things you can do with this mod:
+
+* Create a scrolling map display (map.py).
+* Control your IoT devices through [Home Assistant](https://www.home-assistant.io/).
+* Create clocks/timers based on real-world clock time.
+* Post a Tweet when someone pushes a button (build this yourself!).
+* Send yourself an email when someone is within 100 blocks of your base (build this yourself!).

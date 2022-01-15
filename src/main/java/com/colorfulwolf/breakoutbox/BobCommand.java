@@ -26,6 +26,7 @@ public class BobCommand {
 
 	public String path;
 	public boolean parseOutput = false;
+	public boolean verbose = false; // If set to true, output additional log lines
 
 	public boolean runAsRegularPlayer = false;
 	public boolean runAsCommandBlock = true;
@@ -47,6 +48,8 @@ public class BobCommand {
 			this.blockRateLimitMilliseconds = Long.parseLong(value);
 		} else if (key.equals("parseOutput")) {
 			this.parseOutput = value.equalsIgnoreCase("true");
+		} else if (key.equals("verbose")) {
+			this.verbose = value.equalsIgnoreCase("true");
 		} else if (key.equals("runAsCommandBlock")) {
 			this.runAsCommandBlock = value.equalsIgnoreCase("true");
 		} else if (key.equals("runAsRegularPlayer")) {

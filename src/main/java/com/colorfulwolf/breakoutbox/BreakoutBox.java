@@ -104,6 +104,9 @@ public class BreakoutBox {
 	private void loadConfig(File file) throws IOException {
 		// I cannot believe standard java still does not have json or yaml parsers..
 		commands.clear();
+		if (!file.exists()) {
+			return;
+		}
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		String line;
 		String command = null;

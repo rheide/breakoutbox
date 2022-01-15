@@ -56,9 +56,15 @@ public class BobExternalCommandTask implements Runnable {
 		return e.getName().getContents() + "," + e.getBlockX() + "," + e.getBlockY() + "," + e.getBlockZ() + entityScore;
 	}
 
+	private void _log(Object obj) {
+		if (this.cmd.verbose) {
+			LOGGER.info(obj);
+		}
+	}
+	
 	@Override
 	public void run() {
-		LOGGER.debug("Executing " + this.cmd.path);
+		this._log("Executing " + this.cmd.path);
 
 		Process process = null;
 		try {
@@ -72,8 +78,12 @@ public class BobExternalCommandTask implements Runnable {
 				for (String var : vars.keySet()) {
 					cmdArg = cmdArg.replace(var, vars.get(var));
 				}
-				cmdArgs.add(cmdArg);
+				// TODO this does not take into account quote marks/escaping in the substituted string
+				for (String cmdBit: cmdArg.split(" ")) {
+					cmdArgs.add(cmdBit);					
+				}
 			}
+			this._log(cmdArgs);
 
 			ProcessBuilder builder = new ProcessBuilder(cmdArgs);
 
@@ -84,6 +94,7 @@ public class BobExternalCommandTask implements Runnable {
 				BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 				String line = null;
 				while ((line = reader.readLine()) != null) {
+					this._log(line);
 					if (this.cmd.parseOutput) {
 						this.server.getCommands().performCommand(this.command.getSource(), line);						
 					}
@@ -96,17 +107,17 @@ public class BobExternalCommandTask implements Runnable {
 					BlockPos pos = new BlockPos(this.command.getSource().getPosition());
 					this.cmd.setLastResult(pos, exitVal);
 					String cbCommand = String.format(Constants.SETCMD, pos.getX(), pos.getY(), pos.getZ(), exitVal);
-					LOGGER.debug(cbCommand);
+					this._log(cbCommand);
 					this.server.getCommands().performCommand(this.command.getSource(), cbCommand);
 				}
 			}
 		} catch (InterruptedException e) {
-			LOGGER.debug("INTERRUPTED. KILLING");
+			this._log("INTERRUPTED. KILLING");
 			if (process != null) {
 				process.destroy();
 			}
 		} catch (Exception e) {
-			LOGGER.debug("EXC: " + e);
+			this._log("EXC: " + e);
 			if (process != null) {
 				process.destroy();
 			}
@@ -142,7 +153,7 @@ public class BobExternalCommandTask implements Runnable {
 				targets.add(this.entityToString(e, objective));
 			}
 		} catch (CommandSyntaxException e) {
-			LOGGER.info("Syntax error: " + e);
+			this._log("Syntax error: " + e);
 		} catch (IllegalArgumentException e) {}
 		vars.put("$targets", String.join(";", targets));
 
