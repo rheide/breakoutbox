@@ -134,7 +134,7 @@ Example - targeting multiple entities, some of which are named, with an objectiv
 When executing a breakoutbox command through a command block, the success count is changed to the return value of the program, normalized to a number between 0 and 15.
 This can be used to drive a redstone comparator, so you can hook up world actions that depend on the program's return value.
 
-If the command is rate-limited the command block will keep its previous success count value.
+If the command is rate-limited the command block will keep its previous success count value without calling the external script.
 
 
 # Examples

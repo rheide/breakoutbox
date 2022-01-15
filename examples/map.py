@@ -7,13 +7,19 @@ from os.path import exists
 
 # The total size of your full map, values in each array are minecraft map ids.
 map_data = [
-    [ 3,  4,  5,  6,  7],
-    [ 2,  1,  0,  9,  8],
-    [14, 13, 10, 11, 12],
+    [709, 709, 709, 709, 709, 709, 709, 709, 709, 709],
+    [709, 709, 709, 435, 430, 555, 550, 545, 709, 709],
+    [709, 709, 445, 440, 425, 570, 619, 540, 535, 709],
+    [709, 709, 450, 560, 420, 565, 609, 604, 530, 709],
+    [709, 460, 455, 575, 415, 410, 614, 599, 525, 709],
+    [709, 465, 624, 629, 698, 669, 687, 515, 520, 709],
+    [709, 470, 475, 634, 703, 708, 505, 510, 709, 709],
+    [709, 709, 480, 485, 490, 495, 500, 709, 709, 709],
+    [709, 709, 709, 709, 709, 709, 709, 709, 709, 709],
 ]
 
-initial_x = 2
-initial_y = 2
+initial_x = 3
+initial_y = 3
 
 cmds = {
     'left': (0, -1),
@@ -47,6 +53,17 @@ if __name__ == "__main__":
     parser.add_argument('size_x', type=int, help='Horizontal size of the map')
     parser.add_argument('size_y', type=int, help='Vertical size of the map')
     args = parser.parse_args()
+
+    x, y = load_pos(args.x, args.y, args.z)
+
+    if args.direction == "tp":
+        base_x = -9290
+        base_z = -7112
+        tp_x = base_x + (2048 * y)
+        tp_z = base_z + (2048 * x)
+        print("tp @p {} 100 {}".format(tp_x, tp_z))
+        sys.exit(0)
+
     if args.direction not in cmds:
         print("msg @p Invalid direction: {}".format(args.direction))
         sys.exit(1)
@@ -54,7 +71,6 @@ if __name__ == "__main__":
     offset_x = int((args.size_x - 1) / 2)
     offset_y = int((args.size_y - 1) / 2)
 
-    x, y = load_pos(args.x, args.y, args.z)
     x_chg, y_chg = cmds[args.direction]
 
     x += x_chg
@@ -68,7 +84,7 @@ if __name__ == "__main__":
     for mx in range(-offset_x, offset_x + 1):
         for my in range(-offset_y, offset_y + 1):
             # TODO This only works in one dimension..
-            map_id = map_data[x + mx][y + my]
+            map_id = map_data[x + mx][y - my]
             cmd = "data modify entity @e[nbt={TileX:%s,TileY:%s,TileZ:%s},type=minecraft:item_frame,limit=1] Item set value {id:\"minecraft:filled_map\", tag: {map: %s}, Count: 1}"
             cmd = cmd % (args.x - my, args.y - mx, args.z, map_id)
             print(cmd)
