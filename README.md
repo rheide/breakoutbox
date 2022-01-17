@@ -13,7 +13,7 @@ Key features:
 Disclaimer: this mod is intended for people who know what they're doing. Be very very sure about what you're doing if you're enabling this mod on a public server,
 because it could easily take your server down if your commands are heavyweight and your permissions too permissive.
 
-Disclaimer 2: this is a side project and I don't intend to spend a lot of time maintaining this project. It's provided here is a foundation for other people to fork.
+Disclaimer 2: this is a hobby project! I probably won't spend a lot of time maintaining it. It's provided here as a foundation for other people to fork.
 
 Before getting started it is strongly recommended that you run "/gamerule commandBlockOutput false" to avoid having
 insane amounts of logging.
