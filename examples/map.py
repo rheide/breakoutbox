@@ -2,10 +2,19 @@ import sys
 import argparse
 from os.path import exists
 
-# This script accepts commands to scroll a virtual map display.
+"""
+This script accepts commands to scroll a virtual map display.
+Commands:
+- up, down, left, right: scrolls the map item frames in the given direction
+- tp: teleports player to the current map coordinate (offsets hardcoded in this script)
 
+Scrolling is achieved by returning commands that replace the maps inside each item frame
+with different maps depending on the scroll direction. This is probably doable just within
+vanilla minecraft but is a lot easier this way.
+"""
 
 # The total size of your full map, values in each array are minecraft map ids.
+# Your set of item frames in the minecraft world is a viewport onto this set of maps.
 map_data = [
     [709, 709, 709, 709, 709, 709, 709, 709, 709, 709],
     [709, 709, 709, 435, 430, 555, 550, 545, 709, 709],
@@ -57,6 +66,7 @@ if __name__ == "__main__":
     x, y = load_pos(args.x, args.y, args.z)
 
     if args.direction == "tp":
+        # Adjust this for your map frame's starting position and map size
         base_x = -9290
         base_z = -7112
         tp_x = base_x + (2048 * y)
@@ -83,7 +93,9 @@ if __name__ == "__main__":
 
     for mx in range(-offset_x, offset_x + 1):
         for my in range(-offset_y, offset_y + 1):
-            # TODO This only works in one dimension..
+            # This only works in one dimension!
+            # If your map frame doesn't have the same X or Z orientation
+            # (or if your map is horizontal) you should change this code.
             map_id = map_data[x + mx][y - my]
             cmd = "data modify entity @e[nbt={TileX:%s,TileY:%s,TileZ:%s},type=minecraft:item_frame,limit=1] Item set value {id:\"minecraft:filled_map\", tag: {map: %s}, Count: 1}"
             cmd = cmd % (args.x - my, args.y - mx, args.z, map_id)

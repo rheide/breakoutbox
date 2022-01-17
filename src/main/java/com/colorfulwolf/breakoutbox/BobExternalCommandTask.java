@@ -3,6 +3,7 @@ package com.colorfulwolf.breakoutbox;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -62,6 +63,21 @@ public class BobExternalCommandTask implements Runnable {
 		}
 	}
 	
+	public static List<String> parseArguments(String path, Map<String, String> vars) {
+		for (String var : vars.keySet()) {
+			path = path.replace(var, vars.get(var));
+		}
+		
+		// Why is escaping a string so hard in java???
+		List<String> cmdArgs = new ArrayList<String>();
+		Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(path);
+		while (m.find()) {
+			String cmdArg = m.group(1).replace("\"", "");
+			cmdArgs.add(cmdArg);
+		}
+		return cmdArgs;
+	}
+	
 	@Override
 	public void run() {
 		this._log("Executing " + this.cmd.path);
@@ -69,22 +85,9 @@ public class BobExternalCommandTask implements Runnable {
 		Process process = null;
 		try {
 			Map<String, String> vars = getVars();
+			List<String> cmdArgs = BobExternalCommandTask.parseArguments(this.cmd.path, vars);			
 
-			// Why is escaping a string so hard in java???
-			List<String> cmdArgs = new ArrayList<String>();
-			Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(this.cmd.path);
-			while (m.find()) {
-				String cmdArg = m.group(1).replace("\"", "");
-				for (String var : vars.keySet()) {
-					cmdArg = cmdArg.replace(var, vars.get(var));
-				}
-				// TODO this does not take into account quote marks/escaping in the substituted string
-				for (String cmdBit: cmdArg.split(" ")) {
-					cmdArgs.add(cmdBit);					
-				}
-			}
 			this._log(cmdArgs);
-
 			ProcessBuilder builder = new ProcessBuilder(cmdArgs);
 
 			process = builder.start();
@@ -101,6 +104,7 @@ public class BobExternalCommandTask implements Runnable {
 				}
 
 				int exitVal = Math.max(Math.min(process.exitValue(), 15), 0);
+				this._log("Exit code: " + exitVal);
 
 				if (this.command.getSource().getEntity() == null) {
 					// If source was command block, update state
