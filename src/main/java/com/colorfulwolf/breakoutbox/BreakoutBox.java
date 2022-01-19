@@ -30,7 +30,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fmlserverevents.FMLServerStartingEvent;
+import net.minecraftforge.event.server.ServerStartingEvent;
 
 // The value here should match an entry in the META-INF/mods.toml file
 @Mod("breakoutbox")
@@ -130,7 +130,7 @@ public class BreakoutBox {
 
 	// You can use SubscribeEvent and let the Event Bus discover methods to call
 	@SubscribeEvent
-	public void onServerStarting(FMLServerStartingEvent event) {
+	public void onServerStarting(ServerStartingEvent event) {
 		final MinecraftServer server = event.getServer();
 		CommandDispatcher<CommandSourceStack> disp = server.getCommands().getDispatcher();
 
