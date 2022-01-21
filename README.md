@@ -146,5 +146,7 @@ Things you can do with this mod:
 * Create a scrolling map display (map.py).
 * Control your IoT devices through [Home Assistant](https://www.home-assistant.io/).
 * Create clocks/timers based on real-world clock time.
+* Load crypto prices into your world (kraken.py)
+* Perform virtual crypto trading (buybot.py)
 * Post a Tweet when someone pushes a button (build this yourself!).
 * Send yourself an email when someone is within 100 blocks of your base (build this yourself!).
