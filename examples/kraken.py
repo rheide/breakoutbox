@@ -18,8 +18,8 @@ if __name__ == "__main__":
         key = list(res['result'].keys())[0]
         price = float(res['result'][key]["a"][0])
         normalized = (price - args.min) / (args.max - args.min) * 15
-        print(f"Price: {price}. Normalized: {normalized}")
-        normalized = max(min(15, int(normalized), 0)
+        print(f"say {args.pair} price is: {price}. Normalized: {normalized}")
+        normalized = max(min(15, int(normalized)), 0)
         sys.exit(int(normalized))
     except Exception as e:
         traceback.print_exc()
