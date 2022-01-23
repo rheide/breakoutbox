@@ -4,11 +4,12 @@ Breakoutbox (bob for short) is a Minecraft mod for Minecraft Forge that lets you
 
 Key features:
 
-* Run external scripts from a command block and update the command block's success count with the script's return code.
-* Supply arbitrary console commands from an external script's stdout.
+* Define scripts and parameters to run serverside in your [breakoutbox.cfg](examples/breakoutbox.cfg) file.
+* Run external scripts from a command block and update the command block's success count with the script's return code. This can be read with a comparator to perform world actions based on external script results.
+* Read an external script's stdout and execute it as Minecraft console commands.
 * Pass world data as parameters to external scripts - player names and positions, target lists, scoreboard values.
-* Limit the frequency with which each script can be called on a global and per-block basis.
-* Limit the runtime of each external script. 
+* Rate-limit the frequency with which each script can be called on a global and per-block basis.
+* Set limits on the maximum runtime duration of each external script. 
 
 Disclaimer: this mod is intended for people who know what they're doing. Be very very sure about what you're doing if you're enabling this mod on a public server,
 because it could easily take your server down if your commands are heavyweight and your permissions too permissive.
@@ -18,28 +19,47 @@ Disclaimer 2: this is a hobby project! I probably won't spend a lot of time main
 Before getting started it is strongly recommended that you run "/gamerule commandBlockOutput false" to avoid having
 insane amounts of logging.
 
+* [Commands](#commands)
+  * [bob list](#command-list)
+  * [bob reload](#command-reload)
+  * [bob run and variants](#command-run)
+* [The breakoutbox.cfg configuration file](#config)
+* [Variables](#variables)
+* [Examples](#examples)
+  * [Scrolling Map Display](#example-map)
+  * [Control your IoT devices](#example-iot)
+  * [Crypto exchange rate](#example-crypto-rates)
+  * [Simulated crypto trading](#example-crypto-trading)
+
+<a name="commands"/>
+
 # Commands
+
+<a name="command-list"/>
 
 ## /bob list
 
 Lists the names of all registered commands.
 
+<a name="command-reload"/>
 
 ## /bob reload
 
 Reloads the breakoutbox.cfg configuration file from disk. An example file is provided in the examples folder.
 
+<a name="command-run"/>
 
 ## /bob run and variants 
 
-* /bob run <command> (<arg1> <arg2> ...)
-* /bob runtarget <command> <target selector> (<arg1> <arg2> ...)
-* /bob runscoreboard <command> <scoreboard objective> <target selector> (<arg1> <arg2> ...)
+* `/bob run <command> (<arg1> <arg2> ...)`
+* `/bob runtarget <command> <target selector> (<arg1> <arg2> ...)`
+* `/bob runscoreboard <command> <scoreboard objective> <target selector> (<arg1> <arg2> ...)`
 
 The runtarget and runscoreboard variants make additional information available to the executing script. See below for more information.
 
+<a name="config"/>
 
-# Command definitions
+# The breakoutbox.cfg configuration file
 
 Define your commands in a file called `breakoutbox.cfg` in the root of your server directory. The file should look like this:
 
@@ -93,6 +113,7 @@ The maximum amount of time this external command is allowed to run before it is 
 If set to true the server logs will contain more info about the commands ran and echo the stdout of the called command.
 This is provided for debugging purposes and may be repetitive for frequently called commands, so this is off by default.
 
+<a name="variables" />
 
 # Variables
 
@@ -136,17 +157,67 @@ This can be used to drive a redstone comparator, so you can hook up world action
 
 If the command is rate-limited the command block will keep its previous success count value without calling the external script.
 
+<a name="examples"/>
 
 # Examples
 
-See the examples folder for more examples.
+See the examples folder for the scripts used in these examples. You'll also a find an [example breakoutbox.cfg](examples/breakoutbox.cfg) there. All examples below have an entry in the example breakoutbox.cfg so you can see how they are called. 
 
-Things you can do with this mod:
+<a name="example-map"/>
 
-* Create a scrolling map display (map.py).
-* Control your IoT devices through [Home Assistant](https://www.home-assistant.io/).
-* Create clocks/timers based on real-world clock time.
-* Load crypto prices into your world (kraken.py)
-* Perform virtual crypto trading (buybot.py)
+## Scrolling map display
+
+Script: [map.py](examples/map.py) (edit this so it fits your world and your map numbers)
+    
+Command syntax: `bob run map down x y z width height`
+
+This command lets you scroll a map display consisting of one or more item frames using buttons to automatically replace the maps shown inside each frame. x, y and z correspond to the coordinates of the center item frame of your display.
+    
+https://user-images.githubusercontent.com/895607/150690276-572dbac0-e9fe-4def-aea5-b52a9cbc6817.mp4
+
+<a name="example-iot"/>
+
+## Control your IoT devices
+    
+This example uses [Home Assistant](https://www.home-assistant.io/) to control light switches defined in Home Assistant from within Minecraft.
+
+Script: [homeassistant.py](examples/homeassistant.py) (edit this to add your Home Assistant api key and server IP)
+
+Command syntax: `bob run homeassistant toggle light.your_light_name`
+
+https://user-images.githubusercontent.com/895607/150690507-ecc63540-d634-43c7-8d21-09d8db2508c4.mp4
+
+<a name="example-crypto-rates"/>
+
+## Crypto exchange rates
+
+Have you always wanted to get the latest price of Bitcoin in your world? Me neither, but now you can! 
+
+Script: [kraken.py](examples/kraken.py)
+
+Command syntax: `bob run kraken XBTUSD 30000 40000`
+
+This command will call the Kraken API and output the exchange rate of XBT (Bitcoin) to USD as a redstone signal, normalized so it falls between the min and max values you give it, with the redstone level output between 0 and 15.
+
+https://user-images.githubusercontent.com/895607/150690630-74ca9789-eaa3-4da5-8160-d76a8b1c5ef7.mp4
+
+<a name="example-crypto-trading"/>
+
+## Simulated crypto trading
+
+[buybot.py](examples/buybot.py) uses the runtarget command and the Kraken API to let any named entity on your server trade in crypto using virtual wallets. The script assigns each target a fake wallet with a generous initial balance.
+
+Command syntax: `bob runtarget buybot @p buy==pair=XBTUSD --amount=10000`
+
+https://user-images.githubusercontent.com/895607/150690757-3f4417b9-f880-4a54-a8b4-0fc540a96f4c.mp4
+
+or, if you'd like your animals to do the virtual trading instead:
+
+https://user-images.githubusercontent.com/895607/150690797-929ea70f-7eb7-448c-9e90-e1cef2ba53bb.mp4
+
+    
+## Other examples
+
+* Create clocks/timers based on real-world clock time. 
 * Post a Tweet when someone pushes a button (build this yourself!).
 * Send yourself an email when someone is within 100 blocks of your base (build this yourself!).
