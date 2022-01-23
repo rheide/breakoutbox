@@ -19,33 +19,47 @@ Disclaimer 2: this is a hobby project! I probably won't spend a lot of time main
 Before getting started it is strongly recommended that you run "/gamerule commandBlockOutput false" to avoid having
 insane amounts of logging.
 
-Examples:
+* [Commands](#commands)
+  * [bob list](#command-list)
+  * [bob reload](#command-reload)
+  * [bob run and variants](#command-run)
+* [The breakoutbox.cfg configuration file](#config)
+* [Variables](#variables)
+* [Examples](#examples)
+  * [Scrolling Map Display](#example-map)
+  * [Control your IoT devices](#example-iot)
+  * [Crypto exchange rate](#example-crypto-rates)
+  * [Simulated crypto trading](#example-crypto-trading)
 
-* [Control your IoT devices](#example-iot)
-
+<a name="commands"/>
 
 # Commands
+
+<a name="command-list"/>
 
 ## /bob list
 
 Lists the names of all registered commands.
 
+<a name="command-reload"/>
 
 ## /bob reload
 
 Reloads the breakoutbox.cfg configuration file from disk. An example file is provided in the examples folder.
 
+<a name="command-run"/>
 
 ## /bob run and variants 
 
-* /bob run <command> (<arg1> <arg2> ...)
-* /bob runtarget <command> <target selector> (<arg1> <arg2> ...)
-* /bob runscoreboard <command> <scoreboard objective> <target selector> (<arg1> <arg2> ...)
+* `/bob run <command> (<arg1> <arg2> ...)`
+* `/bob runtarget <command> <target selector> (<arg1> <arg2> ...)`
+* `/bob runscoreboard <command> <scoreboard objective> <target selector> (<arg1> <arg2> ...)`
 
 The runtarget and runscoreboard variants make additional information available to the executing script. See below for more information.
 
+<a name="config"/>
 
-# Command definitions
+# The breakoutbox.cfg configuration file
 
 Define your commands in a file called `breakoutbox.cfg` in the root of your server directory. The file should look like this:
 
@@ -99,6 +113,7 @@ The maximum amount of time this external command is allowed to run before it is 
 If set to true the server logs will contain more info about the commands ran and echo the stdout of the called command.
 This is provided for debugging purposes and may be repetitive for frequently called commands, so this is off by default.
 
+<a name="variables" />
 
 # Variables
 
@@ -142,10 +157,13 @@ This can be used to drive a redstone comparator, so you can hook up world action
 
 If the command is rate-limited the command block will keep its previous success count value without calling the external script.
 
+<a name="examples"/>
 
 # Examples
 
 See the examples folder for the scripts used in these examples. You'll also a find an [example breakoutbox.cfg](examples/breakoutbox.cfg) there. All examples below have an entry in the example breakoutbox.cfg so you can see how they are called. 
+
+<a name="example-map"/>
 
 ## Scrolling map display
 
@@ -158,6 +176,7 @@ This command lets you scroll a map display consisting of one or more item frames
 https://user-images.githubusercontent.com/895607/150690276-572dbac0-e9fe-4def-aea5-b52a9cbc6817.mp4
 
 <a name="example-iot"/>
+
 ## Control your IoT devices
     
 This example uses [Home Assistant](https://www.home-assistant.io/) to control light switches defined in Home Assistant from within Minecraft.
@@ -167,6 +186,8 @@ Script: [homeassistant.py](examples/homeassistant.py) (edit this to add your Hom
 Command syntax: `bob run homeassistant toggle light.your_light_name`
 
 https://user-images.githubusercontent.com/895607/150690507-ecc63540-d634-43c7-8d21-09d8db2508c4.mp4
+
+<a name="example-crypto-rates"/>
 
 ## Crypto exchange rates
 
@@ -179,6 +200,8 @@ Command syntax: `bob run kraken XBTUSD 30000 40000`
 This command will call the Kraken API and output the exchange rate of XBT (Bitcoin) to USD as a redstone signal, normalized so it falls between the min and max values you give it, with the redstone level output between 0 and 15.
 
 https://user-images.githubusercontent.com/895607/150690630-74ca9789-eaa3-4da5-8160-d76a8b1c5ef7.mp4
+
+<a name="example-crypto-trading"/>
 
 ## Simulated crypto trading
 
